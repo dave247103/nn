@@ -39,6 +39,16 @@ def train_test_split(X, y, test_ratio=0.2, seed=0):
     return X[train_idx], X[test_idx], y[train_idx], y[test_idx]
 
 
+def f1_score_binary(y_true, y_pred, positive=1):
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+    tp = np.sum((y_true == positive) & (y_pred == positive))
+    fp = np.sum((y_true != positive) & (y_pred == positive))
+    fn = np.sum((y_true == positive) & (y_pred != positive))
+    denom = 2 * tp + fp + fn
+    return 0.0 if denom == 0 else (2 * tp) / denom
+
+
 class NeuralNet:
     def __init__(self, layer_sizes, seed=0):
         self.layer_sizes = list(layer_sizes)

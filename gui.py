@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
-from main import NeuralNet, generate_dataset, train_test_split
+from main import NeuralNet, f1_score_binary, generate_dataset, train_test_split
 
 
 class App:
@@ -142,9 +142,9 @@ class App:
         net.train(Xtr, ytr, eta=eta, epochs=epochs, batch_size=batch)
         self.net = net
 
-        tr_acc = (net.predict(Xtr) == ytr).mean() if len(ytr) else 0.0
-        te_acc = (net.predict(Xte) == yte).mean() if len(yte) else 0.0
-        self.status_var.set(f"Train acc: {tr_acc:.3f} | Test acc: {te_acc:.3f}")
+        tr_f1 = f1_score_binary(ytr, net.predict(Xtr), positive=1) if len(ytr) else 0.0
+        te_f1 = f1_score_binary(yte, net.predict(Xte), positive=1) if len(yte) else 0.0
+        self.status_var.set(f"Train f1: {tr_f1:.3f} | Test f1: {te_f1:.3f}")
         self._plot()
 
     def on_clear(self):
