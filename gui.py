@@ -21,6 +21,7 @@ class App:
         self.epochs_var = tk.StringVar(value="500")
         self.batch_var = tk.StringVar(value="")
         self.status_var = tk.StringVar(value="Ready")
+        self.out_var = tk.StringVar(value="Output: -")
 
         self.X = None
         self.y = None
@@ -52,12 +53,14 @@ class App:
         ttk.Button(net_box, text="Clear", command=self.on_clear).pack(fill=tk.X)
 
         ttk.Label(controls, textvariable=self.status_var, wraplength=220).pack(fill=tk.X, pady=(8, 0))
+        ttk.Label(controls, textvariable=self.out_var, wraplength=220).pack(fill=tk.X)
 
         fig = Figure(figsize=(6, 6), dpi=100)
         self.ax = fig.add_subplot(111)
         self.canvas = FigureCanvasTkAgg(fig, master=main)
         self.canvas.get_tk_widget().pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
         self._plot()
+        self.canvas.mpl_connect("button_press_event", self.on_click)
 
     def _add_row(self, parent, label, var):
         row = ttk.Frame(parent)
@@ -113,6 +116,7 @@ class App:
             return
         self.X, self.y = generate_dataset(m0, m1, spm)
         self.net = None
+        self.out_var.set("Output: -")
         self.status_var.set(f"Generated {len(self.y)} samples")
         self._plot()
 
@@ -151,6 +155,7 @@ class App:
         self.X = None
         self.y = None
         self.net = None
+        self.out_var.set("Output: -")
         self.status_var.set("Cleared")
         self._plot()
 
@@ -179,6 +184,13 @@ class App:
         self.ax.contourf(xx, yy, preds, levels=[-0.5, 0.5, 1.5], colors=["#ffe0e0", "#e0ecff"], alpha=0.8)
         diff = (proba[:, 1] - proba[:, 0]).reshape(xx.shape)
         self.ax.contour(xx, yy, diff, levels=[0.0], colors="k", linewidths=1.0)
+
+    def on_click(self, event):
+        if self.net is None or event.inaxes != self.ax or event.xdata is None or event.ydata is None:
+            return
+        p = self.net.predict_proba(np.array([[event.xdata, event.ydata]], dtype=float))[0]
+        pred = int(np.argmax(p))
+        self.out_var.set(f"Output: p0={p[0]:.3f} p1={p[1]:.3f} -> class {pred}")
 
 
 def main():
